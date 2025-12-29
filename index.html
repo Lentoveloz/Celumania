@@ -129,28 +129,28 @@
         
         .receipt-bg {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%; /* Aumentado para que cubra más área */
-            height: 90%; /* Aumentado para cubrir firmas también */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: url('celumania.jpg');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             opacity: 0.2;
             z-index: 1;
+            pointer-events: none;
         }
         
         .receipt-content {
             position: relative;
             z-index: 2;
-            width: 80%; /* Mismo ancho que la imagen de fondo */
-            height: 90%; /* Misma altura que la imagen de fondo */
+            width: 90%;
             max-width: 550px;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 20px 0;
+            padding: 30px 0;
         }
         
         .receipt-header {
@@ -176,6 +176,8 @@
             margin-bottom: 15px;
             flex-grow: 1;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .receipt-row {
@@ -185,6 +187,7 @@
             padding-bottom: 4px;
             border-bottom: 1px dotted #ddd;
             font-size: 14px;
+            min-height: 25px;
         }
         
         .receipt-label {
@@ -205,6 +208,7 @@
             padding-top: 15px;
             border-top: 2px dashed #333;
             flex-shrink: 0;
+            min-height: 60px;
         }
         
         .signature-box {
@@ -266,42 +270,41 @@
         /* Estilos para la impresión del recibo */
         @media print {
             @page {
-                size: letter;
-                margin: 0;
+                size: letter portrait;
+                margin: 0.5cm;
             }
             
-            body, html {
+            body {
                 margin: 0 !important;
                 padding: 0 !important;
-                width: 215.9mm; /* Ancho carta */
-                height: 279.4mm; /* Alto carta */
+                visibility: hidden;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 color-adjust: exact !important;
+                width: 100% !important;
+                height: auto !important;
             }
             
-            body * {
-                visibility: hidden;
-                margin: 0;
-                padding: 0;
-            }
-            
-            #print-section, #print-section * {
-                visibility: visible;
+            /* Ocultar todo excepto la sección de impresión */
+            body > *:not(#print-section) {
+                display: none !important;
             }
             
             #print-section {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 215.9mm;
-                height: 279.4mm;
-                background-color: white;
-                padding: 0;
-                margin: 0;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                visibility: visible !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                background-color: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
                 display: block !important;
+                page-break-before: avoid !important;
+                page-break-after: avoid !important;
             }
             
             .no-print {
@@ -309,17 +312,17 @@
             }
             
             .receipt {
-                background-color: white;
-                margin: 0;
-                padding: 0;
-                height: 139.7mm; /* Mitad de página carta */
-                width: 100%;
-                position: relative;
-                page-break-inside: avoid;
-                break-inside: avoid;
-                border-bottom: 1px dashed #ccc;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                background-color: white !important;
+                margin: 0 0 0.5cm 0 !important;
+                padding: 0 !important;
+                height: 12.7cm !important;
+                width: 100% !important;
+                position: relative !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                border: 1px solid #ccc !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
@@ -327,16 +330,15 @@
             }
             
             .receipt:last-child {
-                border-bottom: none;
+                border-bottom: 1px solid #ccc !important;
             }
             
             .receipt-bg {
                 position: absolute !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) !important;
-                width: 80% !important; /* Mismo ancho que el contenido */
-                height: 90% !important; /* Misma altura que el contenido */
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
                 background-image: url('celumania.jpg') !important;
                 background-size: contain !important;
                 background-repeat: no-repeat !important;
@@ -346,17 +348,18 @@
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 display: block !important;
+                pointer-events: none !important;
             }
             
             .receipt-content {
                 position: relative !important;
                 z-index: 2 !important;
-                width: 80% !important; /* Mismo ancho que la imagen */
-                height: 90% !important; /* Misma altura que la imagen */
+                width: 90% !important;
                 max-width: 550px !important;
+                height: 100% !important;
                 display: flex !important;
                 flex-direction: column !important;
-                padding: 15mm 0 !important;
+                padding: 25px 0 !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -371,19 +374,21 @@
             
             .receipt-header h2 {
                 color: #2c3e50 !important;
-                font-size: 20px !important;
+                font-size: 18px !important;
                 margin-bottom: 4px !important;
             }
             
             .receipt-header p {
                 color: #7f8c8d !important;
-                font-size: 12px !important;
+                font-size: 11px !important;
             }
             
             .receipt-info {
                 margin-bottom: 10px !important;
                 flex-grow: 1 !important;
                 overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
             }
             
             .receipt-row {
@@ -392,7 +397,8 @@
                 margin-bottom: 6px !important;
                 padding-bottom: 3px !important;
                 border-bottom: 1px dotted #ddd !important;
-                font-size: 13px !important;
+                font-size: 12px !important;
+                min-height: 20px !important;
             }
             
             .receipt-label {
@@ -413,6 +419,7 @@
                 padding-top: 10px !important;
                 border-top: 2px dashed #333 !important;
                 flex-shrink: 0 !important;
+                min-height: 50px !important;
             }
             
             .signature-box {
@@ -422,9 +429,13 @@
             
             .signature-line {
                 border-top: 1px solid #333 !important;
-                margin-top: 25px !important;
+                margin-top: 20px !important;
                 padding-top: 4px !important;
-                font-size: 12px !important;
+                font-size: 11px !important;
+            }
+            
+            .page-separator {
+                display: none !important;
             }
             
             /* Forzar impresión de fondos y colores */
@@ -479,12 +490,11 @@
             <h2>Vista Previa</h2>
             
             <div class="print-instructions">
-                <strong>IMPORTANTE PARA IMPRIMIR CON FONDO:</strong>
+                <strong></strong>
                 <ol>
-                    <li>Al hacer clic en "Imprimir Recibo" se abrirá el diálogo de impresión</li>
-                    <li>En "Más ajustes" o "Opciones", active "Fondos de página" o "Imágenes de fondo"</li>
-                    <li>Seleccionar "Guardar como PDF" como destino de impresión</li>
-                    <li>El nombre sugerido será el del cliente</li>
+                    <li>Seleccione "Guardar como PDF" como destino de impresión</li>
+                    <li>El nombre sugerido es el nombre del cliente seguido de la fecha, ejemplo Carlos - 28/12/25</li>
+                    
                 </ol>
             </div>
             
@@ -721,7 +731,7 @@
         
         // Función para formatear precio
         function formatPrice(price) {
-            return `$${parseFloat(price).toFixed(2)}`;
+            return `Bs ${parseFloat(price).toFixed(2)}`;
         }
         
         // Función para mostrar vista previa del recibo
@@ -799,10 +809,36 @@
         
         // Función para imprimir el recibo
         function printReceipt() {
-            // Asegurarnos de que la imagen de fondo se establezca correctamente
+            // Primero asegurarnos de que todo el contenido esté actualizado
+            const code = document.getElementById('code').value;
+            const client = document.getElementById('client').value;
+            const product = document.getElementById('product').value;
+            const description = document.getElementById('description').value;
+            const price = document.getElementById('price').value;
+            const currentDateTime = getCurrentDateTime();
+            
+            // Actualizar la sección de impresión
+            document.getElementById('print-code').textContent = code;
+            document.getElementById('print-client').textContent = client;
+            document.getElementById('print-product').textContent = product;
+            document.getElementById('print-description').textContent = description;
+            document.getElementById('print-date').textContent = currentDateTime;
+            document.getElementById('print-price').textContent = formatPrice(price);
+            
+            document.getElementById('print-code2').textContent = code;
+            document.getElementById('print-client2').textContent = client;
+            document.getElementById('print-product2').textContent = product;
+            document.getElementById('print-description2').textContent = description;
+            document.getElementById('print-date2').textContent = currentDateTime;
+            document.getElementById('print-price2').textContent = formatPrice(price);
+            
+            // Forzar la actualización de la imagen de fondo
             const printReceipts = document.querySelectorAll('#print-section .receipt-bg');
             printReceipts.forEach(bg => {
                 bg.style.backgroundImage = "url('celumania.jpg')";
+                bg.style.backgroundSize = "contain";
+                bg.style.backgroundRepeat = "no-repeat";
+                bg.style.backgroundPosition = "center";
                 bg.style.opacity = "0.2";
                 bg.style.display = "block";
             });
@@ -810,7 +846,10 @@
             // Mostrar la sección de impresión
             document.getElementById('print-section').style.display = 'block';
             
-            // Esperar un momento para que el navegador renderice
+            // Forzar un reflow para asegurar que el navegador renderice
+            document.getElementById('print-section').offsetHeight;
+            
+            // Esperar un momento para que todo se renderice
             setTimeout(() => {
                 // Abrir diálogo de impresión
                 window.print();
@@ -819,7 +858,7 @@
                 setTimeout(() => {
                     document.getElementById('print-section').style.display = 'none';
                 }, 100);
-            }, 100);
+            }, 200);
         }
         
         // Función para guardar como PDF
@@ -841,6 +880,9 @@
                 const printReceipts = document.querySelectorAll('#print-section .receipt-bg');
                 printReceipts.forEach(bg => {
                     bg.style.backgroundImage = "url('celumania.jpg')";
+                    bg.style.backgroundSize = "contain";
+                    bg.style.backgroundRepeat = "no-repeat";
+                    bg.style.backgroundPosition = "center";
                     bg.style.opacity = "0.2";
                     bg.style.display = "block";
                 });
@@ -848,7 +890,10 @@
                 // Mostrar sección de impresión
                 document.getElementById('print-section').style.display = 'block';
                 
-                // Esperar un momento para que el navegador renderice
+                // Forzar un reflow para asegurar que el navegador renderice
+                document.getElementById('print-section').offsetHeight;
+                
+                // Esperar un momento para que todo se renderice
                 setTimeout(() => {
                     // Abrir diálogo de impresión
                     window.print();
@@ -857,7 +902,7 @@
                     setTimeout(() => {
                         document.getElementById('print-section').style.display = 'none';
                     }, 100);
-                }, 100);
+                }, 200);
             }
         }
         
