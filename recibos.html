@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Recibos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        /* Estilos para la vista previa del recibo */
+        .receipt-preview {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        /* Estilos normales para vista previa */
+        .receipt {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            background-color: white;
+            border: 1px dashed #ccc;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: hidden;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .receipt-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; /* Aumentado para que cubra más área */
+            height: 90%; /* Aumentado para cubrir firmas también */
+            background-image: url('celumania.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.2;
+            z-index: 1;
+        }
+        
+        .receipt-content {
+            position: relative;
+            z-index: 2;
+            width: 80%; /* Mismo ancho que la imagen de fondo */
+            height: 90%; /* Misma altura que la imagen de fondo */
+            max-width: 550px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 10px;
+            flex-shrink: 0;
+        }
+        
+        .receipt-header h2 {
+            color: #2c3e50;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        
+        .receipt-header p {
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+        
+        .receipt-info {
+            margin-bottom: 15px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px dotted #ddd;
+            font-size: 14px;
+        }
+        
+        .receipt-label {
+            font-weight: bold;
+            width: 35%;
+            flex-shrink: 0;
+        }
+        
+        .receipt-value {
+            width: 60%;
+            word-break: break-word;
+        }
+        
+        .receipt-signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 2px dashed #333;
+            flex-shrink: 0;
+        }
+        
+        .signature-box {
+            width: 45%;
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 30px;
+            padding-top: 5px;
+            font-size: 13px;
+        }
+        
+        .page-separator {
+            text-align: center;
+            margin: 20px 0;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .visible {
+            display: block;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .print-instructions {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+            font-size: 14px;
+        }
+        
+        /* Sección de impresión oculta inicialmente */
+        #print-section {
+            display: none;
+        }
+        
+        /* Estilos para la impresión del recibo */
+        @media print {
+            @page {
+                size: letter;
+                margin: 0;
+            }
+            
+            body, html {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 215.9mm; /* Ancho carta */
+                height: 279.4mm; /* Alto carta */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
+            body * {
+                visibility: hidden;
+                margin: 0;
+                padding: 0;
+            }
+            
+            #print-section, #print-section * {
+                visibility: visible;
+            }
+            
+            #print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 215.9mm;
+                height: 279.4mm;
+                background-color: white;
+                padding: 0;
+                margin: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                display: block !important;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .receipt {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+                height: 139.7mm; /* Mitad de página carta */
+                width: 100%;
+                position: relative;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                border-bottom: 1px dashed #ccc;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+            }
+            
+            .receipt:last-child {
+                border-bottom: none;
+            }
+            
+            .receipt-bg {
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 80% !important; /* Mismo ancho que el contenido */
+                height: 90% !important; /* Misma altura que el contenido */
+                background-image: url('celumania.jpg') !important;
+                background-size: contain !important;
+                background-repeat: no-repeat !important;
+                background-position: center !important;
+                opacity: 0.2 !important;
+                z-index: 1 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                display: block !important;
+            }
+            
+            .receipt-content {
+                position: relative !important;
+                z-index: 2 !important;
+                width: 80% !important; /* Mismo ancho que la imagen */
+                height: 90% !important; /* Misma altura que la imagen */
+                max-width: 550px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                padding: 15mm 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            .receipt-header {
+                text-align: center !important;
+                margin-bottom: 15px !important;
+                border-bottom: 2px dashed #333 !important;
+                padding-bottom: 8px !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .receipt-header h2 {
+                color: #2c3e50 !important;
+                font-size: 20px !important;
+                margin-bottom: 4px !important;
+            }
+            
+            .receipt-header p {
+                color: #7f8c8d !important;
+                font-size: 12px !important;
+            }
+            
+            .receipt-info {
+                margin-bottom: 10px !important;
+                flex-grow: 1 !important;
+                overflow: hidden !important;
+            }
+            
+            .receipt-row {
+                display: flex !important;
+                justify-content: space-between !important;
+                margin-bottom: 6px !important;
+                padding-bottom: 3px !important;
+                border-bottom: 1px dotted #ddd !important;
+                font-size: 13px !important;
+            }
+            
+            .receipt-label {
+                font-weight: bold !important;
+                width: 35% !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .receipt-value {
+                width: 60% !important;
+                word-break: break-word !important;
+            }
+            
+            .receipt-signatures {
+                display: flex !important;
+                justify-content: space-between !important;
+                margin-top: auto !important;
+                padding-top: 10px !important;
+                border-top: 2px dashed #333 !important;
+                flex-shrink: 0 !important;
+            }
+            
+            .signature-box {
+                width: 45% !important;
+                text-align: center !important;
+            }
+            
+            .signature-line {
+                border-top: 1px solid #333 !important;
+                margin-top: 25px !important;
+                padding-top: 4px !important;
+                font-size: 12px !important;
+            }
+            
+            /* Forzar impresión de fondos y colores */
+            .receipt, .receipt-content, .receipt-header, .receipt-info, .receipt-signatures {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RECIBOS CELUMANIA</h1>
+        
+        <!-- Formulario de registro -->
+        <div id="form-section" class="visible">
+            <form id="receipt-form">
+                <div class="form-group">
+                    <label for="code">Código:</label>
+                    <input type="text" id="code" name="code" required placeholder="Ingrese el código del recibo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="client">Cliente:</label>
+                    <input type="text" id="client" name="client" required placeholder="Ingrese el nombre del cliente">
+                </div>
+                
+                <div class="form-group">
+                    <label for="product">Producto:</label>
+                    <input type="text" id="product" name="product" required placeholder="Ingrese el nombre del producto">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Descripción:</label>
+                    <textarea id="description" name="description" required placeholder="Ingrese una descripción del producto"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="price">Precio:</label>
+                    <input type="number" id="price" name="price" step="0.01" min="0" required placeholder="0.00">
+                </div>
+                
+                <div class="btn-container">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Limpiar</button>
+                    <button type="button" class="btn btn-primary" onclick="previewReceipt()">Generar Recibo</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Vista previa del recibo -->
+        <div id="preview-section" class="receipt-preview">
+            <h2>Vista Previa</h2>
+            
+            <div class="print-instructions">
+                <strong>IMPORTANTE PARA IMPRIMIR CON FONDO:</strong>
+                <ol>
+                    <li>Al hacer clic en "Imprimir Recibo" se abrirá el diálogo de impresión</li>
+                    <li>En "Más ajustes" o "Opciones", active "Fondos de página" o "Imágenes de fondo"</li>
+                    <li>Seleccionar "Guardar como PDF" como destino de impresión</li>
+                    <li>El nombre sugerido será el del cliente</li>
+                </ol>
+            </div>
+            
+            <div class="receipt-container">
+                <!-- Recibo superior -->
+                <div class="receipt">
+                    <div class="receipt-bg"></div>
+                    <div class="receipt-content">
+                        <div class="receipt-header">
+                            <h2>RECIBO DE COMPRA</h2>
+                            <p>Celumania - Servicio Técnico Garantizado</p>
+                        </div>
+                        
+                        <div class="receipt-info">
+                            <div class="receipt-row">
+                                <div class="receipt-label">Código:</div>
+                                <div class="receipt-value" id="preview-code"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Cliente:</div>
+                                <div class="receipt-value" id="preview-client"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Producto:</div>
+                                <div class="receipt-value" id="preview-product"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Descripción:</div>
+                                <div class="receipt-value" id="preview-description"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Fecha/Hora:</div>
+                                <div class="receipt-value" id="preview-date"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Precio:</div>
+                                <div class="receipt-value" id="preview-price"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="receipt-signatures">
+                            <div class="signature-box">
+                                <p></p>
+                                <div class="signature-line">Entregue Conforme</div>
+                            </div>
+                            <div class="signature-box">
+                                <p></p>
+                                <div class="signature-line">Recibí Conforme</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page-separator">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+                
+                <!-- Recibo inferior (copia) -->
+                <div class="receipt">
+                    <div class="receipt-bg"></div>
+                    <div class="receipt-content">
+                        <div class="receipt-header">
+                            <h2>RECIBO DE COMPRA (COPIA)</h2>
+                            <p>Celumania - Servicio Técnico Garantizado</p>
+                        </div>
+                        
+                        <div class="receipt-info">
+                            <div class="receipt-row">
+                                <div class="receipt-label">Código:</div>
+                                <div class="receipt-value" id="preview-code2"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Cliente:</div>
+                                <div class="receipt-value" id="preview-client2"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Producto:</div>
+                                <div class="receipt-value" id="preview-product2"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Descripción:</div>
+                                <div class="receipt-value" id="preview-description2"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Fecha/Hora:</div>
+                                <div class="receipt-value" id="preview-date2"></div>
+                            </div>
+                            <div class="receipt-row">
+                                <div class="receipt-label">Precio:</div>
+                                <div class="receipt-value" id="preview-price2"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="receipt-signatures">
+                            <div class="signature-box">
+                                <p></p>
+                                <div class="signature-line">Entregue Conforme</div>
+                            </div>
+                            <div class="signature-box">
+                                <p></p>
+                                <div class="signature-line">Recibí Conforme</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <button class="btn btn-secondary no-print" onclick="goBack()">Volver Atrás</button>
+                <button class="btn btn-primary no-print" onclick="printReceipt()">Imprimir Recibo</button>
+                <button class="btn btn-success no-print" onclick="saveAsPDF()">Guardar como PDF</button>
+            </div>
+            
+            <div class="footer-note">
+                <p><strong>Nota:</strong> Para asegurar que la imagen de fondo se imprima en el PDF, active la opción "Fondos de página" en la configuración de impresión.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de impresión (oculta inicialmente) -->
+    <div id="print-section">
+        <!-- Recibo superior para impresión -->
+        <div class="receipt">
+            <div class="receipt-bg"></div>
+            <div class="receipt-content">
+                <div class="receipt-header">
+                    <h2>RECIBO DE COMPRA</h2>
+                    <p>Celumania - Servicio Técnico Garantizado</p>
+                </div>
+                
+                <div class="receipt-info">
+                    <div class="receipt-row">
+                        <div class="receipt-label">Código:</div>
+                        <div class="receipt-value" id="print-code"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Cliente:</div>
+                        <div class="receipt-value" id="print-client"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Producto:</div>
+                        <div class="receipt-value" id="print-product"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Descripción:</div>
+                        <div class="receipt-value" id="print-description"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Fecha/Hora:</div>
+                        <div class="receipt-value" id="print-date"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Precio:</div>
+                        <div class="receipt-value" id="print-price"></div>
+                    </div>
+                </div>
+                
+                <div class="receipt-signatures">
+                    <div class="signature-box">
+                        <p></p>
+                        <div class="signature-line">Entregue Conforme</div>
+                    </div>
+                    <div class="signature-box">
+                        <p></p>
+                        <div class="signature-line">Recibí Conforme</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recibo inferior (copia) para impresión -->
+        <div class="receipt">
+            <div class="receipt-bg"></div>
+            <div class="receipt-content">
+                <div class="receipt-header">
+                            <h2>RECIBO DE COMPRA (COPIA)</h2>
+                            <p>Celumania - Servicio Técnico Garantizado</p>
+                        </div>
+                
+                <div class="receipt-info">
+                    <div class="receipt-row">
+                        <div class="receipt-label">Código:</div>
+                        <div class="receipt-value" id="print-code2"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Cliente:</div>
+                        <div class="receipt-value" id="print-client2"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Producto:</div>
+                        <div class="receipt-value" id="print-product2"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Descripción:</div>
+                        <div class="receipt-value" id="print-description2"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Fecha/Hora:</div>
+                        <div class="receipt-value" id="print-date2"></div>
+                    </div>
+                    <div class="receipt-row">
+                        <div class="receipt-label">Precio:</div>
+                        <div class="receipt-value" id="print-price2"></div>
+                    </div>
+                </div>
+                
+                <div class="receipt-signatures">
+                    <div class="signature-box">
+                        <p></p>
+                        <div class="signature-line">Entregue Conforme</div>
+                    </div>
+                    <div class="signature-box">
+                        <p></p>
+                        <div class="signature-line">Recibí Conforme</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener la fecha y hora actual formateada
+        function getCurrentDateTime() {
+            const now = new Date();
+            const date = now.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            const time = now.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            return `${date} ${time}`;
+        }
+        
+        // Función para formatear precio
+        function formatPrice(price) {
+            return `$${parseFloat(price).toFixed(2)}`;
+        }
+        
+        // Función para mostrar vista previa del recibo
+        function previewReceipt() {
+            // Obtener valores del formulario
+            const code = document.getElementById('code').value;
+            const client = document.getElementById('client').value;
+            const product = document.getElementById('product').value;
+            const description = document.getElementById('description').value;
+            const price = document.getElementById('price').value;
+            
+            // Validar que todos los campos estén completos
+            if (!code || !client || !product || !description || !price) {
+                alert('Por favor, complete todos los campos del formulario.');
+                return;
+            }
+            
+            // Obtener fecha y hora actual
+            const currentDateTime = getCurrentDateTime();
+            
+            // Actualizar vista previa del recibo superior
+            document.getElementById('preview-code').textContent = code;
+            document.getElementById('preview-client').textContent = client;
+            document.getElementById('preview-product').textContent = product;
+            document.getElementById('preview-description').textContent = description;
+            document.getElementById('preview-date').textContent = currentDateTime;
+            document.getElementById('preview-price').textContent = formatPrice(price);
+            
+            // Actualizar vista previa del recibo inferior (copia)
+            document.getElementById('preview-code2').textContent = code;
+            document.getElementById('preview-client2').textContent = client;
+            document.getElementById('preview-product2').textContent = product;
+            document.getElementById('preview-description2').textContent = description;
+            document.getElementById('preview-date2').textContent = currentDateTime;
+            document.getElementById('preview-price2').textContent = formatPrice(price);
+            
+            // Actualizar también la sección de impresión
+            document.getElementById('print-code').textContent = code;
+            document.getElementById('print-client').textContent = client;
+            document.getElementById('print-product').textContent = product;
+            document.getElementById('print-description').textContent = description;
+            document.getElementById('print-date').textContent = currentDateTime;
+            document.getElementById('print-price').textContent = formatPrice(price);
+            
+            document.getElementById('print-code2').textContent = code;
+            document.getElementById('print-client2').textContent = client;
+            document.getElementById('print-product2').textContent = product;
+            document.getElementById('print-description2').textContent = description;
+            document.getElementById('print-date2').textContent = currentDateTime;
+            document.getElementById('print-price2').textContent = formatPrice(price);
+            
+            // Cambiar la imagen de fondo en ambas secciones
+            const allBg = document.querySelectorAll('.receipt-bg');
+            allBg.forEach(bg => {
+                bg.style.backgroundImage = "url('celumania.jpg')";
+            });
+            
+            // Mostrar sección de vista previa y ocultar formulario
+            document.getElementById('form-section').classList.remove('visible');
+            document.getElementById('form-section').classList.add('hidden');
+            document.getElementById('preview-section').style.display = 'block';
+        }
+        
+        // Función para volver al formulario
+        function goBack() {
+            document.getElementById('preview-section').style.display = 'none';
+            document.getElementById('form-section').classList.remove('hidden');
+            document.getElementById('form-section').classList.add('visible');
+        }
+        
+        // Función para limpiar el formulario
+        function resetForm() {
+            document.getElementById('receipt-form').reset();
+        }
+        
+        // Función para imprimir el recibo
+        function printReceipt() {
+            // Asegurarnos de que la imagen de fondo se establezca correctamente
+            const printReceipts = document.querySelectorAll('#print-section .receipt-bg');
+            printReceipts.forEach(bg => {
+                bg.style.backgroundImage = "url('celumania.jpg')";
+                bg.style.opacity = "0.2";
+                bg.style.display = "block";
+            });
+            
+            // Mostrar la sección de impresión
+            document.getElementById('print-section').style.display = 'block';
+            
+            // Esperar un momento para que el navegador renderice
+            setTimeout(() => {
+                // Abrir diálogo de impresión
+                window.print();
+                
+                // Ocultar la sección de impresión después de imprimir
+                setTimeout(() => {
+                    document.getElementById('print-section').style.display = 'none';
+                }, 100);
+            }, 100);
+        }
+        
+        // Función para guardar como PDF
+        function saveAsPDF() {
+            const client = document.getElementById('client').value || 'recibo';
+            const fileName = client.replace(/\s+/g, '_').toLowerCase() + '_recibo.pdf';
+            
+            // Mostrar instrucciones específicas para PDF
+            const instructions = `Para guardar como PDF con la imagen de fondo:
+
+1. Haga clic en "Aceptar" para abrir el diálogo de impresión
+2. En "Destino" o "Impresora", seleccione "Guardar como PDF"
+3. En "Más ajustes" o "Opciones", active "Fondos de página"
+4. Como nombre de archivo, use: ${fileName}
+5. Haga clic en "Guardar"`;
+
+            if (confirm(instructions)) {
+                // Primero actualizar la imagen de fondo
+                const printReceipts = document.querySelectorAll('#print-section .receipt-bg');
+                printReceipts.forEach(bg => {
+                    bg.style.backgroundImage = "url('celumania.jpg')";
+                    bg.style.opacity = "0.2";
+                    bg.style.display = "block";
+                });
+                
+                // Mostrar sección de impresión
+                document.getElementById('print-section').style.display = 'block';
+                
+                // Esperar un momento para que el navegador renderice
+                setTimeout(() => {
+                    // Abrir diálogo de impresión
+                    window.print();
+                    
+                    // Ocultar la sección de impresión después de imprimir
+                    setTimeout(() => {
+                        document.getElementById('print-section').style.display = 'none';
+                    }, 100);
+                }, 100);
+            }
+        }
+        
+        // Cargar imagen de fondo por defecto para vista previa
+        document.addEventListener('DOMContentLoaded', function() {
+            // Intentar cargar la imagen celumania.jpg
+            const testImage = new Image();
+            testImage.onload = function() {
+                // Si la imagen existe, usarla en todas partes
+                const allBg = document.querySelectorAll('.receipt-bg');
+                allBg.forEach(bg => {
+                    bg.style.backgroundImage = "url('celumania.jpg')";
+                });
+            };
+            testImage.onerror = function() {
+                // Si no existe, usar imagen por defecto solo en vista previa
+                console.log('No se encontró celumania.jpg en la carpeta. Usando imagen por defecto para vista previa.');
+                console.log('Para mejor resultado, coloque una imagen llamada "celumania.jpg" en la misma carpeta.');
+                
+                const previewBg = document.querySelectorAll('#preview-section .receipt-bg');
+                previewBg.forEach(bg => {
+                    bg.style.backgroundImage = "url('https://images.unsplash.com/photo-1598124146163-36819847286d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80')";
+                });
+            };
+            testImage.src = 'celumania.jpg';
+        });
+    </script>
+</body>
+</html>
